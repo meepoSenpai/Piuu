@@ -1,4 +1,9 @@
+# virtualenv directories and files
 bin/*
 include/*
 lib/*
 *.json
+
+# vim swap files and pycache files
+*.swp
+*.pyc
