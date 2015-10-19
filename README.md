@@ -25,6 +25,14 @@ piuu.py [image]
 The image link will also automatically be copied to your clipboard thanks to the 
 pyperclip module.
 
+```
+piuu.py -s
+```
+
+If you pass the `-s` flag instead of an image-name you will automatically upload a screenshot.
+The delete hash and image link will be stored in ~/.images.txt regularly and the link will be
+stored in the system clipboard.
+
 ###Features to come
 
 So far uploads are always done anonymously, so I am planning on adding login-functionality

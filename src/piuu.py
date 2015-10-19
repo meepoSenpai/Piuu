@@ -10,6 +10,7 @@ from imgurpython import ImgurClient
 from sys import argv
 from getpass import getuser
 import pyperclip
+from subprocess import call
 
 CLIENT = ImgurClient('5df57a2eb3ac87a', '')
 SAVEFILE = "/home/{0}/.images.txt".format(getuser())
@@ -47,6 +48,9 @@ def write_hash(image):
         print(to_save, file=output)
 
 if __name__ == '__main__':
+    if IMAGE_PATH == "-s":
+        IMAGE_PATH = "/tmp/piuu.png"
+        call(["scrot", "/tmp/piuu.png"])
     UPLOAD = upload_image(CLIENT)
     pyperclip.copy(UPLOAD['link'])
     write_hash(UPLOAD)
