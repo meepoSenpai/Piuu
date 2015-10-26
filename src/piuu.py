@@ -7,14 +7,14 @@ directly into the systems clipboard
 '''
 
 from imgurpython import ImgurClient
-from sys import argv, exit
 from getpass import getuser
 from subprocess import call
 import pyperclip
+import sys
 
 CLIENT = ImgurClient('5df57a2eb3ac87a', '')
 SAVEFILE = "/home/{0}/.images.txt".format(getuser())
-IMAGE_PATH = argv[-1]
+IMAGE_PATH = sys.argv[-1]
 
 def upload_image(client, **kwargs):
     '''
@@ -47,17 +47,42 @@ def write_hash(image):
     with open(SAVEFILE, "a") as output:
         print(to_save, file=output)
 
+def list_all_uploads():
+    '''
+    This function should list all previously uploaded files, that are stored in
+    the /home/user/.images.txt
+    '''
+    with open(SAVEFILE, "r") as uploads:
+        all_links = uploads.read()
+    all_links = all_links.replace("Image-URL: ", "")\
+                         .replace(" Delete-Hash: ", "")\
+                         .split("\n")
+    all_links.pop(-1)
+    link_dict = {}
+    for item in all_links:
+        split_item = item.split(",")
+        link_dict[split_item[0]] = split_item[1]
+    sorted_keys = sorted(list(link_dict.keys()))
+    for key_index in range(len(sorted_keys)):
+        key = sorted_keys[key_index]
+        print("{2}. The delete hash to {0} is {1}".format(key, link_dict[key], key_index))
+    return sorted_keys, link_dict
+
 if __name__ == '__main__':
-    if argv[1] == '-s':
+    if sys.argv[1] == '-s':
         IMAGE_PATH = "/tmp/piuu.png"
-        if len(argv) == 2:
+        if len(sys.argv) == 2:
             call(["scrot", "/tmp/piuu.png"])
-        elif argv[2] == "--selection":
+        elif sys.argv[2] == "--selection":
             call(["scrot", "-s", "/tmp/piuu.png"])
         else:
             print("Faulty arguments given")
-            exit()
-
-    UPLOAD = upload_image(CLIENT)
-    pyperclip.copy(UPLOAD['link'])
-    write_hash(UPLOAD)
+            sys.exit()
+        UPLOAD = upload_image(CLIENT)
+        pyperclip.copy(UPLOAD['link'])
+        write_hash(UPLOAD)
+    elif sys.argv[1] == '-l':
+        list_all_uploads()
+    else:
+        print("Invalid arguments, please consult someone who" +\
+              " knows more than you do")
