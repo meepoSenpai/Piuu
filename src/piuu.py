@@ -7,10 +7,10 @@ directly into the systems clipboard
 '''
 
 from imgurpython import ImgurClient
-from sys import argv
+from sys import argv, exit
 from getpass import getuser
-import pyperclip
 from subprocess import call
+import pyperclip
 
 CLIENT = ImgurClient('5df57a2eb3ac87a', '')
 SAVEFILE = "/home/{0}/.images.txt".format(getuser())
@@ -48,9 +48,16 @@ def write_hash(image):
         print(to_save, file=output)
 
 if __name__ == '__main__':
-    if IMAGE_PATH == "-s":
+    if argv[1] == '-s':
         IMAGE_PATH = "/tmp/piuu.png"
-        call(["scrot", "/tmp/piuu.png"])
+        if len(argv) == 2:
+            call(["scrot", "/tmp/piuu.png"])
+        elif argv[2] == "--selection":
+            call(["scrot", "-s", "/tmp/piuu.png"])
+        else:
+            print("Faulty arguments given")
+            exit()
+
     UPLOAD = upload_image(CLIENT)
     pyperclip.copy(UPLOAD['link'])
     write_hash(UPLOAD)
