@@ -68,6 +68,15 @@ def list_all_uploads():
         print("{2}. The delete hash to {0} is {1}".format(key, link_dict[key], key_index))
     return sorted_keys, link_dict
 
+def initiate_upload():
+    '''
+    This initiates the upload after it was determined which flag was set
+    with the launch of the utility.
+    '''
+    upload = upload_image(CLIENT)
+    pyperclip.copy(upload['link'])
+    write_hash(upload)
+
 if __name__ == '__main__':
     if sys.argv[1] == '-s':
         IMAGE_PATH = "/tmp/piuu.png"
@@ -78,11 +87,11 @@ if __name__ == '__main__':
         else:
             print("Faulty arguments given")
             sys.exit()
-        UPLOAD = upload_image(CLIENT)
-        pyperclip.copy(UPLOAD['link'])
-        write_hash(UPLOAD)
+        initiate_upload()
     elif sys.argv[1] == '-l':
         list_all_uploads()
+    elif sys.argv[1] == '-f':
+        initiate_upload()
     else:
         print("Invalid arguments, please consult someone who" +\
               " knows more than you do")
