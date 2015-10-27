@@ -11,15 +11,14 @@ from getpass import getuser
 from subprocess import call
 import pyperclip
 import notify2
-import sys
+import argparse
 
 CLIENT = ImgurClient('5df57a2eb3ac87a', '')
 SAVEFILE = "/home/{0}/.images.txt".format(getuser())
-IMAGE_PATH = sys.argv[-1]
 notify2.init("Piuu")
 NOTIFICATOIN = notify2.Notification("The upload was completed!")
 
-def upload_image(client, **kwargs):
+def upload_image(client, image_path, **kwargs):
     '''
     Uploads the image given in the Command line
     Arguments
@@ -38,7 +37,7 @@ def upload_image(client, **kwargs):
             'description' : 'RandImg'
         }
     print("Uploading....")
-    image = client.upload_from_path(IMAGE_PATH, config=config, anon=True)
+    image = client.upload_from_path(image_path, config=config, anon=True)
     return image
 
 def write_hash(image):
@@ -71,31 +70,52 @@ def list_all_uploads():
         print("{2}. The delete hash to {0} is {1}".format(key, link_dict[key], key_index))
     return sorted_keys, link_dict
 
-def initiate_upload():
+def initiate_upload(image_path):
     '''
     This initiates the upload after it was determined which flag was set
     with the launch of the utility.
     '''
-    upload = upload_image(CLIENT)
+    upload = upload_image(CLIENT, image_path)
     pyperclip.copy(upload['link'])
     write_hash(upload)
     NOTIFICATOIN.show()
 
 if __name__ == '__main__':
-    if sys.argv[1] == '-s':
-        IMAGE_PATH = "/tmp/piuu.png"
-        if len(sys.argv) == 2:
-            call(["scrot", "/tmp/piuu.png"])
-        elif sys.argv[2] == "--selection":
-            call(["scrot", "-s", "/tmp/piuu.png"])
-        else:
-            print("Faulty arguments given")
-            sys.exit()
-        initiate_upload()
-    elif sys.argv[1] == '-l':
+#    if '-s' in sys.argv:
+#        IMAGE_PATH = "/tmp/piuu.png"
+#        if len(sys.argv) == 2:
+#            call(["scrot", "/tmp/piuu.png"])
+#        elif '--selection' in sys.argv:
+#            call(["scrot", "-s", "/tmp/piuu.png"])
+#        else:
+#            print("Faulty arguments given")
+#            sys.exit()
+#        initiate_upload()
+#    elif '-l' in sys.argv:
+#        list_all_uploads()
+#    elif '-f' in sys.argv:
+#        initiate_upload()
+#    else:
+#        print("Invalid arguments, please consult someone who" +\
+#              " knows more than you do")
+    PARSER = argparse.ArgumentParser()
+    IMG_GROUP = PARSER.add_mutually_exclusive_group()
+    IMG_GROUP.add_argument('-s', '--screenshot', action="store_true",
+                           help="Upload from screenshot")
+    IMG_GROUP.add_argument('-sS', '--selection', action="store_true",
+                           help="Lets you select a portion of the screen for upload")
+    IMG_GROUP.add_argument('-f', '--filename', type=str,
+                           help="Upload file from filename")
+    IMG_GROUP.add_argument('-l', '--list', action="store_true",
+                           help="List uploads")
+    ARGS = PARSER.parse_args()
+    if ARGS.list:
         list_all_uploads()
-    elif sys.argv[1] == '-f':
-        initiate_upload()
-    else:
-        print("Invalid arguments, please consult someone who" +\
-              " knows more than you do")
+    elif ARGS.screenshot:
+        call(["scrot", "/tmp/piuu.png"])
+        initiate_upload("/tmp/piuu.png")
+    elif ARGS.selection:
+        call(["scrot", "-s", "/tmp/piuu.png"])
+        initiate_upload("/tmp/piuu.png")
+    elif ARGS.filename:
+        initiate_upload(ARGS.filename)
