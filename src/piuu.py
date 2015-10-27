@@ -10,11 +10,14 @@ from imgurpython import ImgurClient
 from getpass import getuser
 from subprocess import call
 import pyperclip
+import notify2
 import sys
 
 CLIENT = ImgurClient('5df57a2eb3ac87a', '')
 SAVEFILE = "/home/{0}/.images.txt".format(getuser())
 IMAGE_PATH = sys.argv[-1]
+notify2.init("Piuu")
+NOTIFICATOIN = notify2.Notification("The upload was completed!")
 
 def upload_image(client, **kwargs):
     '''
@@ -76,6 +79,7 @@ def initiate_upload():
     upload = upload_image(CLIENT)
     pyperclip.copy(upload['link'])
     write_hash(upload)
+    NOTIFICATOIN.show()
 
 if __name__ == '__main__':
     if sys.argv[1] == '-s':
