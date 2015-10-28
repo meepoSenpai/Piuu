@@ -19,7 +19,7 @@ You'll need to install the requirements from the requirements.txt.
 
 Simply run this in your terminal:
 ```
-piuu.py [image]
+piuu.py -f [image]
 ```
 
 The image link will also automatically be copied to your clipboard thanks to the 
@@ -32,6 +32,19 @@ piuu.py -s
 If you pass the `-s` flag instead of an image-name you will automatically upload a screenshot.
 The delete hash and image link will be stored in ~/.images.txt regularly and the link will be
 stored in the system clipboard.
+
+```
+piuu.py -sS
+```
+
+The `-sS` flag allows you to only screencap a selection of your screen. Otherwise it works exactly
+the same as `-s`
+
+```
+piuu.py -l
+```
+
+`-l` will list all uploads to date, including the deletehash of the image.
 
 ###Features to come
 

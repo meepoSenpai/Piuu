@@ -79,25 +79,9 @@ def initiate_upload(image_path):
     pyperclip.copy(upload['link'])
     write_hash(upload)
     NOTIFICATOIN.show()
+    return upload
 
 if __name__ == '__main__':
-#    if '-s' in sys.argv:
-#        IMAGE_PATH = "/tmp/piuu.png"
-#        if len(sys.argv) == 2:
-#            call(["scrot", "/tmp/piuu.png"])
-#        elif '--selection' in sys.argv:
-#            call(["scrot", "-s", "/tmp/piuu.png"])
-#        else:
-#            print("Faulty arguments given")
-#            sys.exit()
-#        initiate_upload()
-#    elif '-l' in sys.argv:
-#        list_all_uploads()
-#    elif '-f' in sys.argv:
-#        initiate_upload()
-#    else:
-#        print("Invalid arguments, please consult someone who" +\
-#              " knows more than you do")
     PARSER = argparse.ArgumentParser()
     IMG_GROUP = PARSER.add_mutually_exclusive_group()
     IMG_GROUP.add_argument('-s', '--screenshot', action="store_true",
