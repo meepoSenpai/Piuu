@@ -54,21 +54,45 @@ def list_all_uploads():
     This function should list all previously uploaded files, that are stored in
     the /home/user/.images.txt
     '''
+    sorted_keys, link_dict = obtain_list_and_keys()
+    for key_index in range(len(sorted_keys)):
+        key = sorted_keys[key_index]
+        print("{2}. The delete hash to {0} is {1}".format(key, link_dict[key], key_index + 1))
+
+def obtain_list_and_keys():
+    '''
+    Returns a list of delete hashes and a dictionary of
+    links in relation to the deletehash
+    '''
     with open(SAVEFILE, "r") as uploads:
         all_links = uploads.read()
     all_links = all_links.replace("Image-URL: ", "")\
                          .replace(" Delete-Hash: ", "")\
-                         .split("\n")
-    all_links.pop(-1)
+                         .split("\n")[:-1]
     link_dict = {}
     for item in all_links:
         split_item = item.split(",")
         link_dict[split_item[0]] = split_item[1]
     sorted_keys = sorted(list(link_dict.keys()))
-    for key_index in range(len(sorted_keys)):
-        key = sorted_keys[key_index]
-        print("{2}. The delete hash to {0} is {1}".format(key, link_dict[key], key_index))
     return sorted_keys, link_dict
+
+def delete_by_index(index):
+    '''
+    This method will delete an image on basis of an index
+    taken from all listed uploads
+    '''
+    sorted_keys, link_dict = obtain_list_and_keys()
+    try:
+        delhash = link_dict[sorted_keys[index - 1]]
+        with open(SAVEFILE, 'r') as uploads:
+            all_uploads = uploads.read().replace('\n', '\n~')\
+                                        .split('~')[:-1]
+        to_write = [x for x in all_uploads if not x.endswith(delhash + '\n')]
+        with open(SAVEFILE, 'w') as uploads:
+            uploads.writelines(to_write)
+        CLIENT.delete_image(delhash)
+    except IndexError:
+        print("Invalid index given")
 
 def initiate_upload(image_path):
     '''
@@ -92,6 +116,8 @@ if __name__ == '__main__':
                            help="Upload file from filename")
     IMG_GROUP.add_argument('-l', '--list', action="store_true",
                            help="List uploads")
+    IMG_GROUP.add_argument('-d', '--delete', action="store_true",
+                           help="Delete image from imgur")
     ARGS = PARSER.parse_args()
     if ARGS.list:
         list_all_uploads()
@@ -103,3 +129,6 @@ if __name__ == '__main__':
         initiate_upload("/tmp/piuu.png")
     elif ARGS.filename:
         initiate_upload(ARGS.filename)
+    elif ARGS.delete:
+        list_all_uploads()
+        delete_by_index(int(input("What image do you want to delete? ")))
