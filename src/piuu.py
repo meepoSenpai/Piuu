@@ -16,7 +16,6 @@ import argparse
 CLIENT = ImgurClient('5df57a2eb3ac87a', '')
 SAVEFILE = "/home/{0}/.images.txt".format(getuser())
 notify2.init("Piuu")
-NOTIFICATOIN = notify2.Notification("The upload was completed!")
 
 def upload_image(client, image_path, **kwargs):
     '''
@@ -36,7 +35,7 @@ def upload_image(client, image_path, **kwargs):
             'title' : 'RandImg',
             'description' : 'RandImg'
         }
-    print("Uploading....")
+    notify2.Notification("Uploading...").show()
     image = client.upload_from_path(image_path, config=config, anon=True)
     return image
 
@@ -102,7 +101,7 @@ def initiate_upload(image_path):
     upload = upload_image(CLIENT, image_path)
     pyperclip.copy(upload['link'])
     write_hash(upload)
-    NOTIFICATOIN.show()
+    notify2.Notification("Upload completed!").show()
     return upload
 
 if __name__ == '__main__':
