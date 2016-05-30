@@ -17,7 +17,7 @@ CLIENT = ImgurClient('5df57a2eb3ac87a', '')
 SAVEFILE = "/home/{0}/.images.txt".format(getuser())
 notify2.init("Piuu")
 
-def upload_image(client, image_path, **kwargs):
+def upload_image(client, image_path, argdict={}):
     '''
     Uploads the image given in the Command line
     Arguments
@@ -28,13 +28,9 @@ def upload_image(client, image_path, **kwargs):
         'title' : None,
         'description' : None
     }
-    if kwargs == {}:
-        config = {
-            'album' : None,
-            'name' : 'RandImg',
-            'title' : 'RandImg',
-            'description' : 'RandImg'
-        }
+    if argdict != {}:
+        for key in iter(argdict):
+            config[key] = argdict[key]
     notify2.Notification("Uploading...").show()
     image = client.upload_from_path(image_path, config=config, anon=True)
     return image
@@ -93,12 +89,12 @@ def delete_by_index(index):
     except IndexError:
         print("Invalid index given")
 
-def initiate_upload(image_path):
+def initiate_upload(image_path, argdict={}):
     '''
     This initiates the upload after it was determined which flag was set
     with the launch of the utility.
     '''
-    upload = upload_image(CLIENT, image_path)
+    upload = upload_image(CLIENT, image_path, argdict)
     pyperclip.copy(upload['link'])
     write_hash(upload)
     notify2.Notification("Upload completed!").show()
@@ -117,12 +113,27 @@ if __name__ == '__main__':
                            help="List uploads")
     IMG_GROUP.add_argument('-d', '--delete', action="store_true",
                            help="Delete image from imgur")
+    IMAGE_TAGS = PARSER.add_argument_group()
+    IMAGE_TAGS.add_argument('-n', '--name', type=str,
+                            help='Add a name to the Image')
+    IMAGE_TAGS.add_argument('-D', '--description', type=str,
+                            help='Add a description')
+    IMAGE_TAGS.add_argument('-t', '--title', type=str,
+                            help='Add an image Title')
     ARGS = PARSER.parse_args()
+    ARGDICT = {}
+    if ARGS.name or ARGS.description or ARGS.title:
+        if ARGS.name:
+            ARGDICT['name'] = ARGS.name
+        if ARGS.description:
+            ARGDICT['description'] = ARGS.description
+        if ARGS.title:
+            ARGDICT['title'] = ARGS.title
     if ARGS.list:
         list_all_uploads()
     elif ARGS.screenshot:
         call(["scrot", "/tmp/piuu.png"])
-        initiate_upload("/tmp/piuu.png")
+        initiate_upload("/tmp/piuu.png", ARGDICT)
     elif ARGS.selection:
         call(["scrot", "-s", "/tmp/piuu.png"])
         initiate_upload("/tmp/piuu.png")
