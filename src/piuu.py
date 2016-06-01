@@ -6,15 +6,17 @@ an image to imgur, which then copies the image link
 directly into the systems clipboard
 '''
 
-from imgurpython import ImgurClient
+import csv
+import argparse
 from getpass import getuser
 from subprocess import call
-import pyperclip
+
 import notify2
-import argparse
+import pyperclip
+from imgurpython import ImgurClient
 
 CLIENT = ImgurClient('5df57a2eb3ac87a', '')
-SAVEFILE = "/home/{0}/.images.txt".format(getuser())
+SAVEFILE = "/home/{0}/.images.csv".format(getuser())
 notify2.init("Piuu")
 
 def upload_image(client, image_path, argdict={}):
@@ -40,19 +42,20 @@ def write_hash(image):
     This function writes the delete-hash to a file, so the user can check his uploaded images
     or delete the image afterwards
     '''
-    to_save = "Image-URL: {0}, Delete-Hash: {1}".format(image['link'], image['deletehash'])
+    # to_save = "Image-URL: {0}, Delete-Hash: {1}".format(image['link'], image['deletehash'])
+    to_save = [image['link'], image['deletehash']]
     with open(SAVEFILE, "a") as output:
-        print(to_save, file=output)
+        writer = csv.writer(output)
+        writer.writerow(to_save)
 
 def list_all_uploads():
     '''
     This function should list all previously uploaded files, that are stored in
     the /home/user/.images.txt
     '''
-    sorted_keys, link_dict = obtain_list_and_keys()
-    for key_index in range(len(sorted_keys)):
-        key = sorted_keys[key_index]
-        print("{2}. The delete hash to {0} is {1}".format(key, link_dict[key], key_index + 1))
+    links = obtain_list_and_keys()
+    for key, link_hash in enumerate(links):
+        print("{0}. The deletehash for {1} is {2}.".format(key, link_hash[0], link_hash[1]))
 
 def obtain_list_and_keys():
     '''
@@ -60,31 +63,24 @@ def obtain_list_and_keys():
     links in relation to the deletehash
     '''
     with open(SAVEFILE, "r") as uploads:
-        all_links = uploads.read()
-    all_links = all_links.replace("Image-URL: ", "")\
-                         .replace(" Delete-Hash: ", "")\
-                         .split("\n")[:-1]
-    link_dict = {}
-    for item in all_links:
-        split_item = item.split(",")
-        link_dict[split_item[0]] = split_item[1]
-    sorted_keys = sorted(list(link_dict.keys()))
-    return sorted_keys, link_dict
+        all_lines = list(csv.reader(uploads))
+    link_list = [(x[0], x[1]) for x in all_lines]
+    return link_list
 
 def delete_by_index(index):
     '''
     This method will delete an image on basis of an index
     taken from all listed uploads
     '''
-    sorted_keys, link_dict = obtain_list_and_keys()
+    #sorted_keys, link_dict = obtain_list_and_keys()
+    link_list = obtain_list_and_keys()
     try:
-        delhash = link_dict[sorted_keys[index - 1]]
+        delhash = link_list[index][1]
         with open(SAVEFILE, 'r') as uploads:
-            all_uploads = uploads.read().replace('\n', '\n~')\
-                                        .split('~')[:-1]
-        to_write = [x for x in all_uploads if not x.endswith(delhash + '\n')]
+            all_uploads = list(csv.reader(uploads))
+        to_write = [x for x in all_uploads if not delhash == x[1]]
         with open(SAVEFILE, 'w') as uploads:
-            uploads.writelines(to_write)
+            csv.writer(uploads).writerows(to_write)
         CLIENT.delete_image(delhash)
     except IndexError:
         print("Invalid index given")
@@ -120,6 +116,8 @@ if __name__ == '__main__':
                             help='Add a description')
     IMAGE_TAGS.add_argument('-t', '--title', type=str,
                             help='Add an image Title')
+    IMG_GROUP.add_argument('-g', '--graphical-ui', action='store_true',
+                           help='Open the GUI')
     ARGS = PARSER.parse_args()
     ARGDICT = {}
     if ARGS.name or ARGS.description or ARGS.title:
